@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Rejestracja</title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <%- include('partials/navbar') %>
+    <h1>Rejestracja</h1>
+    <form id="registerForm">
+        <label for="username">Nazwa użytkownika:</label>
+        <input type="text" id="username" name="username" required><br>
+        <label for="password">Hasło:</label>
+        <input type="password" id="password" name="password" required><br>
+        <input type="submit" value="Zarejestruj">
+    </form>
+
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            const userData = {
+            username: username,
+            password: password
+            };
+
+            console.log('Sending data:', userData);
+
+            axios.post('http://localhost:8080/user/register', {
+                username: username,
+                password: password
+            }).then(function(response) {
+                console.log('Registration successful:', response.data);
+                alert('Rejestracja zakończona sukcesem. Możesz się teraz zalogować.');
+                window.location.href = '/login'; 
+            }).catch(function(error) {
+                console.error('Registration failed:', error);
+                alert('Błąd rejestracji: ' + error.response.data);
+            });
+        });
+    </script>
+</body>
+</html>

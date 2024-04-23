@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Logowanie</title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <%- include('partials/navbar') %>
+    <h1>Logowanie</h1>
+    <form id="loginForm">
+        <label for="username">Nazwa użytkownika:</label>
+        <input type="text" id="username" name="username" required><br>
+        <label for="password">Hasło:</label>
+        <input type="password" id="password" name="password" required><br>
+        <input type="submit" value="Zaloguj">
+    </form>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            axios.post('http://localhost:8080/authenticate', {
+                username: username,
+                password: password
+            }).then(function(response) {
+                console.log('Authenticated:', response.data);
+                localStorage.setItem('jwt', response.data.token); 
+                window.location.href = '/items';
+            }).catch(function(error) {
+                console.error('Authentication failed:', error);
+                alert('Błąd logowania: ' + error.response.data);
+            });
+        }); 
+    </script>
+</body>
+</html>

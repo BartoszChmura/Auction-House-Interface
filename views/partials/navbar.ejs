@@ -1,0 +1,29 @@
+<div id="navbar">
+    <a href="/">Strona główna</a>
+    <span id="authLinks"></span>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const jwt = localStorage.getItem('jwt');
+        const authLinks = document.getElementById('authLinks');
+
+        if (jwt) {
+            authLinks.innerHTML = `
+                <a href="/items">Lista przedmiotów</a>
+                <a href="/add-item">Wystaw przedmiot</a>
+                <a href="#" onclick="logout()">Wyloguj</a>
+            `;
+        } else {
+            authLinks.innerHTML = `
+                <a href="/login">Logowanie</a>
+                <a href="/register">Rejestracja</a>
+            `;
+        }
+    });
+
+    function logout() {
+        localStorage.removeItem('jwt');
+        window.location.href = '/';
+    }
+</script>

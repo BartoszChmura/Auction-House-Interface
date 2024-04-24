@@ -1,53 +1,164 @@
 <!DOCTYPE html>
 <html lang="pl">
+
 <head>
     <meta charset="UTF-8">
     <title>Lista Przedmiotów</title>
     <link rel="stylesheet" href="/styles.css">
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
+
 <body>
     <%- include('partials/navbar') %>
-    <h1>Przedmioty na aukcji</h1>
-    <div id="itemsList"></div>
+        <h1>Przedmioty na aukcji</h1>
+        <div id="itemsList"></div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const jwt = localStorage.getItem('jwt');
-            axios.get('http://localhost:8080/item/all', {
-                headers: {
-                    'Authorization': 'Bearer ' + jwt
-                }
-            }).then(function(response) {
-                const items = response.data;
-                const list = document.getElementById('itemsList');
-                items.forEach(item => {
-                    const winnerText = item.winnerId ? item.winnerId : "brak";
-                    const itemDiv = document.createElement('div');
-                    itemDiv.innerHTML = `
-                        <h2>${item.title}</h2>
-                        <p>${item.description}</p>
-                        <ul>
-                            <li>Aktualna cena: ${item.currentPrice} zł</li>
-                            <li>ID zwycięzcy: ${winnerText}</li>
-                            <li>Kategoria: ${item.categoryName}</li>
-                            <li>Data rozpoczęcia: ${formatDate(item.startTime)}</li>
-                            <li>Data zakończenia: ${formatDate(item.endTime)}</li>
-                            <li>Status: ${item.status}</li>
-                        </ul>
-                    `;
-                    list.appendChild(itemDiv);
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const jwt = localStorage.getItem('jwt');
+                const userId = localStorage.getItem('userId');
+            
+                axios.get('http://localhost:8080/item/all', {
+                    headers: {
+                        'Authorization': 'Bearer ' + jwt
+                    }
+                }).then(function(response) {
+                    const items = response.data;
+                    const list = document.getElementById('itemsList');
+                    items.forEach(item => {
+                        const winnerText = item.winnerId ? item.winnerId : "brak";
+                        const itemDiv = document.createElement('div');
+                        let deleteButtonHTML = '';
+                        let editButtonHTML = '';
+            
+                        if ((item.sellerId === parseInt(userId)) && (item.status === "aktywna" || item.status === "nie sprzedano") && (!item.winnerId)) {
+                            deleteButtonHTML = `<button onclick="deleteItem(${item.id}, '${jwt}')">Usuń</button>`;
+                            editButtonHTML = `<button onclick="showEditForm(${item.id})">Edytuj</button>
+                                <div id="editForm${item.id}" style="display:none;">
+                                    <form onsubmit="updateItem(event, ${item.id}, '${jwt}')">
+                                        <label for="title${item.id}">Tytuł:</label>
+                                        <input type="text" id="title${item.id}" value="${item.title}" required><br>
+                                        <label for="description${item.id}">Opis:</label>
+                                        <textarea id="description${item.id}" required>${item.description}</textarea><br>
+                                        <label for="endTime${item.id}">Data zakończenia:</label>
+                                        <input type="datetime-local" id="endTime${item.id}" value="${formatDateTimeForInput(item.endTime)}" required><br>
+                                        <input type="submit" value="Zaktualizuj przedmiot">
+                                    </form>
+                                </div>`;
+                        }
+            
+                        itemDiv.innerHTML = `
+                            <h2>${item.title}</h2>
+                            <p>${item.description}</p>
+                            <ul>
+                                <li>Aktualna cena: ${item.currentPrice} zł</li>
+                                <li>ID zwycięzcy: ${winnerText}</li>
+                                <li>Data rozpoczęcia: ${formatDate(item.startTime)}</li>
+                                <li>Data zakończenia: ${formatDate(item.endTime)}</li>
+                                <li>Status: ${item.status}</li>
+                            </ul>
+                            <button onclick="showBidForm(${item.id}, ${item.currentPrice})">Złóż ofertę</button>
+                            <div id="bidForm${item.id}" style="display:none;">
+                                <input type="number" id="bidAmount${item.id}" placeholder="Kwota oferty" min="${item.currentPrice + 1}" step="any">
+                                <button onclick="submitBid(${item.id}, '${jwt}')">Wyślij</button>
+                            </div>
+                            ${editButtonHTML}
+                            ${deleteButtonHTML}
+                        `;
+                        list.appendChild(itemDiv);
+                    });
+                }).catch(function(error) {
+                    console.error('Failed to fetch items:', error);
+                    alert('Błąd przy ładowaniu przedmiotów');
                 });
-            }).catch(function(error) {
-                console.error('Failed to fetch items:', error);
-                alert('Błąd przy ładowaniu przedmiotów');
             });
-        });
-        
-        function formatDate(dateString) {
-            const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
-            return new Date(dateString).toLocaleDateString('pl-PL', options);
-        }
+
+            function showBidForm(itemId, currentPrice) {
+                const bidForm = document.getElementById(`bidForm${itemId}`);
+                bidForm.style.display = 'block';
+            }
+
+            function submitBid(itemId, jwt) {
+                const bidAmount = document.getElementById(`bidAmount${itemId}`).value;
+                if (!bidAmount) {
+                    alert("Proszę wprowadzić kwotę oferty.");
+                    return;
+                }
+                axios.post('http://localhost:8080/bid/add', {
+                    itemId: itemId,
+                    bidAmount: parseFloat(bidAmount)
+                }, {
+                    headers: {
+                        'Authorization': 'Bearer ' + jwt
+                    }
+                }).then(function (response) {
+                    alert('Oferta została złożona pomyślnie.');
+                    window.location.reload();
+                }).catch(function (error) {
+                    console.error('Failed to submit bid:', error);
+                    alert('Błąd przy składaniu oferty: ' + (error.response.data || "Nieznany błąd"));
+                });
+            }
+
+            function deleteItem(itemId, jwt) {
+                if (confirm('Czy na pewno chcesz usunąć ten przedmiot?')) {
+                    axios.delete(`http://localhost:8080/item/${itemId}`, {
+                        headers: {
+                            'Authorization': 'Bearer ' + jwt
+                        }
+                    }).then(function (response) {
+                        alert('Przedmiot został usunięty.');
+                        window.location.reload();
+                    }).catch(function (error) {
+                        console.error('Failed to delete item:', error);
+                        alert('Błąd przy usuwaniu przedmiotu: ' + (error.response.data || "Nieznany błąd"));
+                    });
+                }
+            }
+
+            function showEditForm(itemId) {
+                const editForm = document.getElementById(`editForm${itemId}`);
+                editForm.style.display = 'block';
+            }
+
+            function updateItem(event, itemId, jwt) {
+                event.preventDefault();
+                const title = document.getElementById(`title${itemId}`).value;
+                const description = document.getElementById(`description${itemId}`).value;
+                const endTime = document.getElementById(`endTime${itemId}`).value;
+
+                axios.put(`http://localhost:8080/item/${itemId}`, {
+                    title: title,
+                    description: description,
+                    endTime: endTime
+                }, {
+                    headers: {
+                        'Authorization': 'Bearer ' + jwt
+                    }
+                }).then(function (response) {
+                    alert('Przedmiot został zaktualizowany.');
+                    window.location.reload();
+                }).catch(function (error) {
+                    console.error('Failed to update item:', error);
+                    alert('Błąd przy aktualizacji przedmiotu: ' + (error.response.data || "Nieznany błąd"));
+                });
+            }
+
+            function formatDateTimeForInput(dateTimeString) {
+                const date = new Date(dateTimeString);
+                return date.toISOString().slice(0, 16); 
+            }
+
+            function formatDate(dateString) {
+                const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+                return new Date(dateString).toLocaleDateString('pl-PL', options);
+            }
+
+            function formatDate(dateString) {
+                const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+                return new Date(dateString).toLocaleDateString('pl-PL', options);
+            }
         </script>
 </body>
+
 </html>

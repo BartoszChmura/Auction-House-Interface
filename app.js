@@ -12,10 +12,15 @@ const authRoutes = require('./routes/authRoutes');
 
 const itemRoutes = require('./routes/itemRoutes');
 
+const userRoutes = require('./routes/userRoutes');
+
 
 app.use('/', authRoutes);
 
 app.use('/', itemRoutes);
+
+app.use('/', userRoutes);
+
 
 app.get('/', (req, res) => {
     res.render('index'); 

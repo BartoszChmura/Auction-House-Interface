@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Lista Użytkowników</title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <%- include('partials/navbar') %>
+    <h1>Lista Użytkowników</h1>
+    <div id="usersList"></div>
+
+    <!-- Formularz edycji użytkownika -->
+    <div id="editForm" style="display:none;">
+        <h2>Edytuj swoje dane</h2>
+        <form id="userEditForm">
+            <label for="username">Nazwa użytkownika:</label>
+            <input type="text" id="username" required><br>
+            <label for="email">Email:</label>
+            <input type="email" id="email" required><br>
+            <label for="password">Hasło (pozostaw puste, aby nie zmieniać):</label>
+            <input type="password" id="password"><br>
+            <input type="submit" value="Zaktualizuj dane">
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const jwt = localStorage.getItem('jwt');
+            const loggedInUserId = localStorage.getItem('userId');
+
+            axios.get('/all-users', {
+                headers: {
+                    'Authorization': 'Bearer ' + jwt
+                }
+            }).then(function (response) {
+                const users = response.data;
+                const list = document.getElementById('usersList');
+                users.forEach(user => {
+                    const userDiv = document.createElement('div');
+                    userDiv.classList.add('user');
+                    let editButtonHTML = '';
+                    let deleteButtonHTML = '';
+
+                    if (loggedInUserId == user.id) {
+                        editButtonHTML = `<button onclick="showEditForm('${user.username}', '${user.email}', ${user.id})">Edytuj</button>`;
+                        deleteButtonHTML = `<button onclick="deleteUser(${user.id})">Usuń konto</button>`;
+                    }
+
+                    userDiv.innerHTML = `
+                        <h2>${user.username}</h2>
+                        <p>ID: ${user.id}</p>
+                        <p>Email: ${user.email}</p>
+                        <p>Data utworzenia konta: ${formatDate(user.createdAt)}</p>
+                        ${editButtonHTML}
+                        ${deleteButtonHTML}
+                    `;
+                    list.appendChild(userDiv);
+                });
+            }).catch(function (error) {
+                console.error('Failed to fetch users:', error);
+                alert('Błąd przy ładowaniu użytkowników');
+            });
+
+            document.getElementById('userEditForm').addEventListener('submit', function(event) {
+                event.preventDefault();
+                updateUser(loggedInUserId);
+            });
+        });
+
+        function showEditForm(username, email, userId) {
+            document.getElementById('username').value = username;
+            document.getElementById('email').value = email;
+            document.getElementById('editForm').style.display = 'block';
+            document.getElementById('userEditForm').onsubmit = function(event) {
+                event.preventDefault();
+                updateUser(userId);
+            };
+        }
+
+        function updateUser(userId) {
+            const jwt = localStorage.getItem('jwt');
+            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            axios.put(`http://localhost:8080/user/${userId}`, { username, email, password: password || null }, {
+                headers: {
+                    'Authorization': 'Bearer ' + jwt
+                }
+            }).then(function (response) {
+                alert('Dane użytkownika zostały zaktualizowane. Zaloguj się ponownie.');
+                logout();
+            }).catch(function (error) {
+                console.error('Failed to update user:', error);
+                alert('Błąd przy aktualizacji danych użytkownika');
+            });
+        }
+
+        function deleteUser(userId) {
+            const jwt = localStorage.getItem('jwt');
+            if (confirm('Czy na pewno chcesz usunąć swoje konto?')) {
+                axios.delete(`http://localhost:8080/user/${userId}`, {
+                    headers: {
+                        'Authorization': 'Bearer ' + jwt
+                    }
+                }).then(function (response) {
+                    alert('Twoje konto zostało usunięte.');
+                    logout();
+                }).catch(function (error) {
+                    console.error('Failed to delete user:', error);
+                    alert('Błąd przy usuwaniu konta użytkownika');
+                });
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('jwt');
+            localStorage.removeItem('userId');
+            window.location.href = '/login';
+        }
+
+        function formatDate(dateString) {
+            const options = { year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            return new Date(dateString).toLocaleDateString('pl-PL', options);
+        }
+    </script>
+</body>
+</html>

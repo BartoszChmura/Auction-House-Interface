@@ -1,27 +1,27 @@
 <!DOCTYPE html>
-<html lang="pl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Lista Użytkowników</title>
+    <title>User List</title>
     <link rel="stylesheet" href="/styles.css">
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
     <%- include('partials/navbar') %>
-    <h1>Lista Użytkowników</h1>
+    <h1>User List</h1>
     <div id="usersList"></div>
 
-    <!-- Formularz edycji użytkownika -->
+    <!-- User Edit Form -->
     <div id="editForm" style="display:none;">
-        <h2>Edytuj swoje dane</h2>
+        <h2>Edit Your Information</h2>
         <form id="userEditForm">
-            <label for="username">Nazwa użytkownika:</label>
+            <label for="username">Username:</label>
             <input type="text" id="username" required><br>
             <label for="email">Email:</label>
             <input type="email" id="email" required><br>
-            <label for="password">Hasło (pozostaw puste, aby nie zmieniać):</label>
+            <label for="password">Password (leave blank to keep unchanged):</label>
             <input type="password" id="password"><br>
-            <input type="submit" value="Zaktualizuj dane">
+            <input type="submit" value="Update Information">
         </form>
     </div>
 
@@ -44,15 +44,15 @@
                     let deleteButtonHTML = '';
 
                     if (loggedInUserId == user.id) {
-                        editButtonHTML = `<button onclick="showEditForm('${user.username}', '${user.email}', ${user.id})">Edytuj</button>`;
-                        deleteButtonHTML = `<button onclick="deleteUser(${user.id})">Usuń konto</button>`;
+                        editButtonHTML = `<button onclick="showEditForm('${user.username}', '${user.email}', ${user.id})">Edit</button>`;
+                        deleteButtonHTML = `<button onclick="deleteUser(${user.id})">Delete Account</button>`;
                     }
 
                     userDiv.innerHTML = `
                         <h2>${user.username}</h2>
                         <p>ID: ${user.id}</p>
                         <p>Email: ${user.email}</p>
-                        <p>Data utworzenia konta: ${formatDate(user.createdAt)}</p>
+                        <p>Account Created: ${formatDate(user.createdAt)}</p>
                         ${editButtonHTML}
                         ${deleteButtonHTML}
                     `;
@@ -60,7 +60,7 @@
                 });
             }).catch(function (error) {
                 console.error('Failed to fetch users:', error);
-                alert('Błąd przy ładowaniu użytkowników');
+                alert('Error loading users');
             });
 
             document.getElementById('userEditForm').addEventListener('submit', function(event) {
@@ -90,27 +90,27 @@
                     'Authorization': 'Bearer ' + jwt
                 }
             }).then(function (response) {
-                alert('Dane użytkownika zostały zaktualizowane. Zaloguj się ponownie.');
+                alert('User information has been updated. Please log in again.');
                 logout();
             }).catch(function (error) {
                 console.error('Failed to update user:', error);
-                alert('Błąd przy aktualizacji danych użytkownika');
+                alert('Error updating user information');
             });
         }
 
         function deleteUser(userId) {
             const jwt = localStorage.getItem('jwt');
-            if (confirm('Czy na pewno chcesz usunąć swoje konto?')) {
+            if (confirm('Are you sure you want to delete your account?')) {
                 axios.delete(`http://localhost:8080/user/${userId}`, {
                     headers: {
                         'Authorization': 'Bearer ' + jwt
                     }
                 }).then(function (response) {
-                    alert('Twoje konto zostało usunięte.');
+                    alert('Your account has been deleted.');
                     logout();
                 }).catch(function (error) {
                     console.error('Failed to delete user:', error);
-                    alert('Błąd przy usuwaniu konta użytkownika');
+                    alert('Error deleting user account');
                 });
             }
         }
@@ -123,7 +123,7 @@
 
         function formatDate(dateString) {
             const options = { year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-            return new Date(dateString).toLocaleDateString('pl-PL', options);
+            return new Date(dateString).toLocaleDateString('en-GB', options);
         }
     </script>
 </body>

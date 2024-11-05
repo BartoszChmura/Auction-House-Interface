@@ -1,20 +1,20 @@
 <!DOCTYPE html>
-<html lang="pl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Logowanie</title>
+    <title>Login</title>
     <link rel="stylesheet" href="/styles.css">
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
     <%- include('partials/navbar') %>
-    <h1>Logowanie</h1>
+    <h1>Login</h1>
     <form id="loginForm">
-        <label for="username">Nazwa użytkownika:</label>
+        <label for="username">Username:</label>
         <input type="text" id="username" name="username" required><br>
-        <label for="password">Hasło:</label>
+        <label for="password">Password:</label>
         <input type="password" id="password" name="password" required><br>
-        <input type="submit" value="Zaloguj">
+        <input type="submit" value="Login">
     </form>
 
     <script>
@@ -40,13 +40,13 @@
                 window.location.href = '/items';  
             }).catch(function(error) {
                 console.error('Authentication or User Fetch failed:', error);
-                alert('Błąd logowania lub pobierania danych użytkownika: ' + (error.response && error.response.data ? error.response.data : "Nieznany błąd"));
+                alert('Login or user data fetch failed: ' + (error.response && error.response.data ? error.response.data : "Unknown error"));
             });
         });
     
         function formatDate(dateString) {
             const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
-            return new Date(dateString).toLocaleDateString('pl-PL', options);
+            return new Date(dateString).toLocaleDateString('en-GB', options);
         }
     </script>
     

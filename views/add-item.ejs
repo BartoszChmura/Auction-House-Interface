@@ -2,26 +2,26 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Dodaj przedmiot</title>
+    <title>Sell Item</title>
     <link rel="stylesheet" href="/styles.css">
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
     <%- include('partials/navbar') %>
-    <h1>Dodaj nowy przedmiot</h1>
+    <h1>Add new item</h1>
     <form id="addItemForm">
-        <label for="title">Tytuł:</label>
+        <label for="title">Title:</label>
         <input type="text" id="title" name="title" required><br>
-        <label for="description">Opis:</label>
+        <label for="description">Description:</label>
         <textarea id="description" name="description" required></textarea><br>
-        <label for="startPrice">Cena wyjściowa:</label>
+        <label for="startPrice">Starting price:</label>
         <input type="number" id="startPrice" name="startPrice" required><br>
-        <label for="endTime">Data zakończenia:</label>
+        <label for="endTime">End date:</label>
         <input type="datetime-local" id="endTime" name="endTime" required><br>
-        <label for="categoryId">Kategoria:</label>
+        <label for="categoryId">Category:</label>
         <select id="categoryId" name="categoryId" required>
         </select><br>
-        <input type="submit" value="Dodaj przedmiot">
+        <input type="submit" value="Add new item">
     </form>
 
     <script>
@@ -43,7 +43,7 @@
                 });
             }).catch(function(error) {
                 console.error('Failed to load categories:', error);
-                alert('Nie udało się załadować kategorii');
+                alert('Failed to load categories');
             });
 
             document.getElementById('addItemForm').addEventListener('submit', function(event) {
@@ -54,7 +54,7 @@
                 const endTime = document.getElementById('endTime').value;
                 const categoryId = document.getElementById('categoryId').value;
 
-                axios.post('http://localhost:8080/item/add', {
+                axios.post('http://localhost:8080/item/save', {
                     title: title,
                     description: description,
                     startPrice: parseFloat(startPrice),
@@ -66,11 +66,11 @@
                     }
                 }).then(function(response) {
                     console.log('Item added:', response.data);
-                    alert('Przedmiot został dodany.');
+                    alert('Item succesfully added.');
                     window.location.href = '/items'; 
                 }).catch(function(error) {
                     console.error('Failed to add item:', error);
-                    alert('Błąd przy dodawaniu przedmiotu: ' + error.response.data);
+                    alert('Failed to add item: ' + error.response.data);
                 });
             });
         });

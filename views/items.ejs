@@ -1,238 +1,238 @@
 <!DOCTYPE html>
-<html lang="pl">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
-    <title>Lista Przedmiotów</title>
+    <title>Item List</title>
     <link rel="stylesheet" href="/styles.css">
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 
 <body>
     <%- include('partials/navbar') %>
-        <h1>Przedmioty na aukcji</h1>
-        <div id="itemsList"></div>
+    <h1>Auction Items</h1>
+    <div id="itemsList"></div>
 
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                const jwt = localStorage.getItem('jwt');
-                const userId = localStorage.getItem('userId');
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const jwt = localStorage.getItem('jwt');
+            const userId = localStorage.getItem('userId');
 
-                axios.get('http://localhost:8080/item/all', {
-                    headers: {
-                        'Authorization': 'Bearer ' + jwt
+            axios.get('http://localhost:8080/item/all', {
+                headers: {
+                    'Authorization': 'Bearer ' + jwt
+                }
+            }).then(function (response) {
+                const items = response.data;
+                const list = document.getElementById('itemsList');
+                items.forEach(item => {
+                    const winnerText = item.winnerId ? item.winnerId : "none";
+                    const itemDiv = document.createElement('div');
+                    let deleteButtonHTML = '';
+                    let editButtonHTML = '';
+                    let paymentButtonHTML = '';
+                    let bidButtonHTML = '';
+
+                    if (item.status !== "sold") {
+                        if ((item.sellerId === parseInt(userId)) && (item.status === "active" || item.status === "not sold") && (!item.winnerId)) {
+                            deleteButtonHTML = `<button onclick="deleteItem(${item.id}, '${jwt}')">Delete</button>`;
+                            editButtonHTML = `<button onclick="showEditForm(${item.id})">Edit</button>
+                    <div id="editForm${item.id}" style="display:none;">
+                        <form onsubmit="updateItem(event, ${item.id}, '${jwt}')">
+                            <label for="title${item.id}">Title:</label>
+                            <input type="text" id="title${item.id}" value="${item.title}" required><br>
+                            <label for="description${item.id}">Description:</label>
+                            <textarea id="description${item.id}" required>${item.description}</textarea><br>
+                            <label for="endTime${item.id}">End Date:</label>
+                            <input type="datetime-local" id="endTime${item.id}" value="${formatDateTimeForInput(item.endTime)}" required><br>
+                            <input type="submit" value="Update Item">
+                        </form>
+                    </div>`;
+                        }
+
+                        if (item.status === "awaiting payment") {
+                            paymentButtonHTML = `
+                    <button onclick="showPaymentForm(${item.id})">Pay</button>
+                    <div id="paymentForm${item.id}" style="display:none;">
+                        <form onsubmit="submitPayment(event, ${item.id})">
+                            <input type="email" id="email${item.id}" placeholder="Email" required><br>
+                            <input type="text" id="phone${item.id}" placeholder="Phone number" required><br>
+                            <input type="text" id="firstName${item.id}" placeholder="First Name" required><br>
+                            <input type="text" id="lastName${item.id}" placeholder="Last Name" required><br>
+                            <input type="submit" value="Submit Payment">
+                        </form>
+                    </div>
+                `;
+                        }
+
+                        if (item.status === "active") {
+                            bidButtonHTML = `<button onclick="showBidForm(${item.id}, ${item.currentPrice})">Place Bid</button>
+                    <div id="bidForm${item.id}" style="display:none;">
+                        <input type="number" id="bidAmount${item.id}" placeholder="Bid Amount" min="${item.currentPrice + 1}" step="any">
+                        <button onclick="submitBid(${item.id}, '${jwt}')">Submit</button>
+                    </div>`;
+                        }
                     }
-                }).then(function (response) {
-                    const items = response.data;
-                    const list = document.getElementById('itemsList');
-                    items.forEach(item => {
-                        const winnerText = item.winnerId ? item.winnerId : "brak";
-                        const itemDiv = document.createElement('div');
-                        let deleteButtonHTML = '';
-                        let editButtonHTML = '';
-                        let paymentButtonHTML = '';
-                        let bidButtonHTML = '';
 
-                        if (item.status !== "sprzedano") {
-                            if ((item.sellerId === parseInt(userId)) && (item.status === "aktywna" || item.status === "nie sprzedano") && (!item.winnerId)) {
-                                deleteButtonHTML = `<button onclick="deleteItem(${item.id}, '${jwt}')">Usuń</button>`;
-                                editButtonHTML = `<button onclick="showEditForm(${item.id})">Edytuj</button>
-                        <div id="editForm${item.id}" style="display:none;">
-                            <form onsubmit="updateItem(event, ${item.id}, '${jwt}')">
-                                <label for="title${item.id}">Tytuł:</label>
-                                <input type="text" id="title${item.id}" value="${item.title}" required><br>
-                                <label for="description${item.id}">Opis:</label>
-                                <textarea id="description${item.id}" required>${item.description}</textarea><br>
-                                <label for="endTime${item.id}">Data zakończenia:</label>
-                                <input type="datetime-local" id="endTime${item.id}" value="${formatDateTimeForInput(item.endTime)}" required><br>
-                                <input type="submit" value="Zaktualizuj przedmiot">
-                            </form>
-                        </div>`;
-                            }
-
-                            if (item.status === "oczekuje na płatność") {
-                                paymentButtonHTML = `
-                        <button onclick="showPaymentForm(${item.id})">Zapłać</button>
-                        <div id="paymentForm${item.id}" style="display:none;">
-                            <form onsubmit="submitPayment(event, ${item.id})">
-                                <input type="email" id="email${item.id}" placeholder="Email" required><br>
-                                <input type="text" id="phone${item.id}" placeholder="Numer telefonu" required><br>
-                                <input type="text" id="firstName${item.id}" placeholder="Imię" required><br>
-                                <input type="text" id="lastName${item.id}" placeholder="Nazwisko" required><br>
-                                <input type="submit" value="Wyślij płatność">
-                            </form>
-                        </div>
-                    `;
-                            }
-
-                            if (item.status === "aktywna") {
-                                bidButtonHTML = `<button onclick="showBidForm(${item.id}, ${item.currentPrice})">Złóż ofertę</button>
-                        <div id="bidForm${item.id}" style="display:none;">
-                            <input type="number" id="bidAmount${item.id}" placeholder="Kwota oferty" min="${item.currentPrice + 1}" step="any">
-                            <button onclick="submitBid(${item.id}, '${jwt}')">Wyślij</button>
-                        </div>`;
-                            }
-                        }
-
-                        itemDiv.innerHTML = `
-                <h2>${item.title}</h2>
-                <p>${item.description}</p>
-                <ul>
-                    <li>Aktualna cena: ${item.currentPrice} zł</li>
-                    <li>ID zwycięzcy: ${winnerText}</li>
-                    <li>Data rozpoczęcia: ${formatDate(item.startTime)}</li>
-                    <li>Data zakończenia: ${formatDate(item.endTime)}</li>
-                    <li>Status: ${item.status}</li>
-                </ul>
-                ${bidButtonHTML}
-                ${paymentButtonHTML}
-                ${editButtonHTML}
-                ${deleteButtonHTML}
-            `;
-                        list.appendChild(itemDiv);
-                    });
-                }).catch(function (error) {
-                    console.error('Failed to fetch items:', error);
-                    alert('Błąd przy ładowaniu przedmiotów');
+                    itemDiv.innerHTML = `
+            <h2>${item.title}</h2>
+            <p>${item.description}</p>
+            <ul>
+                <li>Current Price: ${item.currentPrice} zł</li>
+                <li>Winner ID: ${winnerText}</li>
+                <li>Start Date: ${formatDate(item.startTime)}</li>
+                <li>End Date: ${formatDate(item.endTime)}</li>
+                <li>Status: ${item.status}</li>
+            </ul>
+            ${bidButtonHTML}
+            ${paymentButtonHTML}
+            ${editButtonHTML}
+            ${deleteButtonHTML}
+        `;
+                    list.appendChild(itemDiv);
                 });
+            }).catch(function (error) {
+                console.error('Failed to fetch items:', error);
+                alert('Failed to fetch items');
             });
+        });
 
 
 
-            function showPaymentForm(itemId) {
-                const paymentForm = document.getElementById(`paymentForm${itemId}`);
-                paymentForm.style.display = 'block';
-            }
+        function showPaymentForm(itemId) {
+            const paymentForm = document.getElementById(`paymentForm${itemId}`);
+            paymentForm.style.display = 'block';
+        }
 
-            function submitPayment(event, itemId) {
-                event.preventDefault();
-                const jwt = localStorage.getItem('jwt');
-                const email = document.getElementById(`email${itemId}`).value;
-                const phone = document.getElementById(`phone${itemId}`).value;
-                const firstName = document.getElementById(`firstName${itemId}`).value;
-                const lastName = document.getElementById(`lastName${itemId}`).value;
+        function submitPayment(event, itemId) {
+            event.preventDefault();
+            const jwt = localStorage.getItem('jwt');
+            const email = document.getElementById(`email${itemId}`).value;
+            const phone = document.getElementById(`phone${itemId}`).value;
+            const firstName = document.getElementById(`firstName${itemId}`).value;
+            const lastName = document.getElementById(`lastName${itemId}`).value;
 
-                getWinnerBidByItemId(itemId).then(winningBidId => {
-                    const paymentRequest = {
-                        description: "Zakup przedmiotu",
-                        buyer: {
-                            email, phone, firstName, lastName
-                        }
-                    };
-                    axios.post(`http://localhost:8080/payment/pay/${winningBidId}`, paymentRequest, {
-                        headers: {
-                            'Authorization': `Bearer ${jwt}`
-                        }
-                    }).then(response => {
-                        window.location.href = response.data.redirectUri;
-                    }).catch(error => {
-                        console.error('Failed to initiate payment:', error);
-                        alert('Błąd przy inicjacji płatności: ' + (error.response && error.response.data.error || "Nieznany błąd"));
-                    });
-                }).catch(error => {
-                    alert('Nie znaleziono zwycięskiej oferty: ' + error);
-                });
-            }
-
-            function getWinnerBidByItemId(itemId) {
-                const jwt = localStorage.getItem('jwt');
-                return axios.get(`http://localhost:8080/bid/winner/${itemId}`, {
+            getWinnerBidByItemId(itemId).then(winningBidId => {
+                const paymentRequest = {
+                    description: "Item Purchase",
+                    buyer: {
+                        email, phone, firstName, lastName
+                    }
+                };
+                axios.post(`http://localhost:8080/payment/pay/${winningBidId}`, paymentRequest, {
                     headers: {
                         'Authorization': `Bearer ${jwt}`
                     }
                 }).then(response => {
-                    return response.data.id;
+                    window.location.href = response.data.redirectUri;
                 }).catch(error => {
-                    console.error('Failed to fetch winner bid:', error);
-                    throw new Error('Failed to fetch winner bid');
+                    console.error('Failed to initiate payment:', error);
+                    alert('Failed to initiate payment: ' + (error.response && error.response.data.error || "Unknown error"));
                 });
-            }
+            }).catch(error => {
+                alert('No winning bid found: ' + error);
+            });
+        }
 
-
-
-            function showBidForm(itemId, currentPrice) {
-                const bidForm = document.getElementById(`bidForm${itemId}`);
-                bidForm.style.display = 'block';
-            }
-
-            function submitBid(itemId, jwt) {
-                const bidAmount = document.getElementById(`bidAmount${itemId}`).value;
-                if (!bidAmount) {
-                    alert("Proszę wprowadzić kwotę oferty.");
-                    return;
+        function getWinnerBidByItemId(itemId) {
+            const jwt = localStorage.getItem('jwt');
+            return axios.get(`http://localhost:8080/bid/winner/${itemId}`, {
+                headers: {
+                    'Authorization': `Bearer ${jwt}`
                 }
-                axios.post('http://localhost:8080/bid/add', {
-                    itemId: itemId,
-                    bidAmount: parseFloat(bidAmount)
-                }, {
+            }).then(response => {
+                return response.data.id;
+            }).catch(error => {
+                console.error('Failed to fetch winner bid:', error);
+                throw new Error('Failed to fetch winner bid');
+            });
+        }
+
+
+
+        function showBidForm(itemId, currentPrice) {
+            const bidForm = document.getElementById(`bidForm${itemId}`);
+            bidForm.style.display = 'block';
+        }
+
+        function submitBid(itemId, jwt) {
+            const bidAmount = document.getElementById(`bidAmount${itemId}`).value;
+            if (!bidAmount) {
+                alert("Please enter a bid amount.");
+                return;
+            }
+            axios.post('http://localhost:8080/bid', {
+                itemId: itemId,
+                bidAmount: parseFloat(bidAmount)
+            }, {
+                headers: {
+                    'Authorization': 'Bearer ' + jwt
+                }
+            }).then(function (response) {
+                alert('Bid placed successfully.');
+                window.location.reload();
+            }).catch(function (error) {
+                console.error('Failed to submit bid:', error);
+                alert('Error placing bid: ' + (error.response.data || "Unknown error"));
+            });
+        }
+
+        function deleteItem(itemId, jwt) {
+            if (confirm('Are you sure you want to delete this item?')) {
+                axios.delete(`http://localhost:8080/item/${itemId}`, {
                     headers: {
                         'Authorization': 'Bearer ' + jwt
                     }
                 }).then(function (response) {
-                    alert('Oferta została złożona pomyślnie.');
+                    alert('Item deleted.');
                     window.location.reload();
                 }).catch(function (error) {
-                    console.error('Failed to submit bid:', error);
-                    alert('Błąd przy składaniu oferty: ' + (error.response.data || "Nieznany błąd"));
+                    console.error('Failed to delete item:', error);
+                    alert('Error deleting item: ' + (error.response.data || "Unknown error"));
                 });
             }
+        }
 
-            function deleteItem(itemId, jwt) {
-                if (confirm('Czy na pewno chcesz usunąć ten przedmiot?')) {
-                    axios.delete(`http://localhost:8080/item/${itemId}`, {
-                        headers: {
-                            'Authorization': 'Bearer ' + jwt
-                        }
-                    }).then(function (response) {
-                        alert('Przedmiot został usunięty.');
-                        window.location.reload();
-                    }).catch(function (error) {
-                        console.error('Failed to delete item:', error);
-                        alert('Błąd przy usuwaniu przedmiotu: ' + (error.response.data || "Nieznany błąd"));
-                    });
+        function showEditForm(itemId) {
+            const editForm = document.getElementById(`editForm${itemId}`);
+            editForm.style.display = 'block';
+        }
+
+        function updateItem(event, itemId, jwt) {
+            event.preventDefault();
+            const title = document.getElementById(`title${itemId}`).value;
+            const description = document.getElementById(`description${itemId}`).value;
+            const endTime = document.getElementById(`endTime${itemId}`).value;
+
+            axios.put(`http://localhost:8080/item/${itemId}`, {
+                title: title,
+                description: description,
+                endTime: endTime
+            }, {
+                headers: {
+                    'Authorization': 'Bearer ' + jwt
                 }
-            }
+            }).then(function (response) {
+                alert('Item updated.');
+                window.location.reload();
+            }).catch(function (error) {
+                console.error('Failed to update item:', error);
+                alert('Error updating item: ' + (error.response.data || "Unknown error"));
+            });
+        }
 
-            function showEditForm(itemId) {
-                const editForm = document.getElementById(`editForm${itemId}`);
-                editForm.style.display = 'block';
-            }
-
-            function updateItem(event, itemId, jwt) {
-                event.preventDefault();
-                const title = document.getElementById(`title${itemId}`).value;
-                const description = document.getElementById(`description${itemId}`).value;
-                const endTime = document.getElementById(`endTime${itemId}`).value;
-
-                axios.put(`http://localhost:8080/item/${itemId}`, {
-                    title: title,
-                    description: description,
-                    endTime: endTime
-                }, {
-                    headers: {
-                        'Authorization': 'Bearer ' + jwt
-                    }
-                }).then(function (response) {
-                    alert('Przedmiot został zaktualizowany.');
-                    window.location.reload();
-                }).catch(function (error) {
-                    console.error('Failed to update item:', error);
-                    alert('Błąd przy aktualizacji przedmiotu: ' + (error.response.data || "Nieznany błąd"));
-                });
-            }
-
-            function formatDateTimeForInput(dateTimeString) {
-                const date = new Date(dateTimeString);
-                return date.toISOString().slice(0, 16);
-            }
+        function formatDateTimeForInput(dateTimeString) {
+            const date = new Date(dateTimeString);
+            return date.toISOString().slice(0, 16);
+        }
 
 
 
-            function formatDate(dateString) {
-                const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
-                return new Date(dateString).toLocaleDateString('pl-PL', options);
-            }
-        </script>
+        function formatDate(dateString) {
+            const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+            return new Date(dateString).toLocaleDateString('en-GB', options);
+        }
+    </script>
 </body>
 
 </html>

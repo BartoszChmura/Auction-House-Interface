@@ -1,20 +1,20 @@
 <!DOCTYPE html>
-<html lang="pl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Rejestracja</title>
+    <title>Registration</title>
     <link rel="stylesheet" href="/styles.css">
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
     <%- include('partials/navbar') %>
-    <h1>Rejestracja</h1>
+    <h1>Registration</h1>
     <form id="registerForm">
-        <label for="username">Nazwa użytkownika:</label>
+        <label for="username">Username:</label>
         <input type="text" id="username" name="username" required><br>
-        <label for="password">Hasło:</label>
+        <label for="password">Password:</label>
         <input type="password" id="password" name="password" required><br>
-        <input type="submit" value="Zarejestruj">
+        <input type="submit" value="Register">
     </form>
 
     <script>
@@ -24,8 +24,8 @@
             const password = document.getElementById('password').value;
 
             const userData = {
-            username: username,
-            password: password
+                username: username,
+                password: password
             };
 
             console.log('Sending data:', userData);
@@ -35,11 +35,11 @@
                 password: password
             }).then(function(response) {
                 console.log('Registration successful:', response.data);
-                alert('Rejestracja zakończona sukcesem. Możesz się teraz zalogować.');
+                alert('Registration successful. You can now log in.');
                 window.location.href = '/login'; 
             }).catch(function(error) {
                 console.error('Registration failed:', error);
-                alert('Błąd rejestracji: ' + error.response.data);
+                alert('Registration error: ' + error.response.data);
             });
         });
     </script>

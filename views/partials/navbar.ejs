@@ -1,5 +1,5 @@
 <div id="navbar">
-    <a href="/">Strona główna</a>
+    <a href="/">Home Page</a>
     <span id="authLinks"></span>
 </div>
 
@@ -10,15 +10,15 @@
 
         if (jwt) {
             authLinks.innerHTML = `
-                <a href="/users">Lista użytkowników</a> 
-                <a href="/items">Lista przedmiotów</a>
-                <a href="/add-item">Wystaw przedmiot</a>
-                <a href="#" onclick="logout()">Wyloguj</a>
+                <a href="/users">Users</a> 
+                <a href="/items">Items</a>
+                <a href="/add-item">Sell Item</a>
+                <a href="#" onclick="logout()">Logout</a>
             `;
         } else {
             authLinks.innerHTML = `
-                <a href="/login">Logowanie</a>
-                <a href="/register">Rejestracja</a>
+                <a href="/login">Login</a>
+                <a href="/register">Register</a>
             `;
         }
     });

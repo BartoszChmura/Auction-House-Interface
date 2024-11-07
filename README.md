@@ -22,21 +22,22 @@ Auction House Interface is a simple web interface that allows users to register,
 ## Installation
 
 1. **Set up and run the backend:**
+   
    To use the frontend application, you need to configure and run the Auction House backend. Follow the instructions in the [Auction House Backend repository](https://github.com/BartoszChmura/auction-house) to set up the backend on your local machine.
 
-2. **Clone the repository:**
+3. **Clone the repository:**
     ```bash
     git clone https://github.com/BartoszChmura/Auction-House-Interface.git
     ```
 
-3. **Install dependencies:**
+4. **Install dependencies:**
    In the project directory, run:
     ```bash
     cd Auction-House-Interface
     npm install
     ```
 
-4. **Run the frontend application:**
+5. **Run the frontend application:**
     ```bash
     npm start
     ```

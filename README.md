@@ -17,6 +17,8 @@ Auction House Interface is a simple web interface that allows users to register,
 ## Getting started
 
 ### Prerequisites
+To run this project, ensure that you have the following software installed:
+
 - **Git**
 - **Node.js 14+**
 - **npm**

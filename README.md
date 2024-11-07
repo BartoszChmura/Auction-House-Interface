@@ -4,9 +4,9 @@
 Auction House Interface is a simple web interface that allows users to register, log in, view, and create auctions, as well as participate in real-time bidding. It is the frontend part of the **Auction House** application. The backend repository, which provides the core auction functionality and API, is available [here](https://github.com/BartoszChmura/auction-house).
 
 ## Features
-- **User Registration and Login**
-- **Auction Creation**
-- **Real-Time Bidding**
+- User Registration and Login
+- Auction Creation
+- Real-Time Bidding
 
 ## Technologies Used
 - **HTML/CSS**
@@ -21,19 +21,22 @@ Auction House Interface is a simple web interface that allows users to register,
 
 ## Installation
 
-1. **Clone the repository:**
+1. **Set up and run the backend:**
+   To use the frontend application, you need to configure and run the Auction House backend. Follow the instructions in the [Auction House Backend repository](https://github.com/BartoszChmura/auction-house) to set up the backend on your local machine.
+
+2. **Clone the repository:**
     ```bash
     git clone https://github.com/BartoszChmura/Auction-House-Interface.git
     ```
 
-2. **Install dependencies:**
+3. **Install dependencies:**
    In the project directory, run:
     ```bash
     cd Auction-House-Interface
     npm install
     ```
 
-3. **Run the frontend application:**
+4. **Run the frontend application:**
     ```bash
     npm start
     ```

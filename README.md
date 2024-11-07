@@ -14,12 +14,14 @@ Auction House Interface is a simple web interface that allows users to register,
 - **EJS**
 - **Node.js**
 
-## Prerequisites
+## Getting started
+
+### Prerequisites
 - **Git**
 - **Node.js 14+**
 - **npm**
 
-## Installation
+### Installation
 
 1. **Set up and run the backend:**
    

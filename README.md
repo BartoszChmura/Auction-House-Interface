@@ -1,7 +1,7 @@
 # Auction House Interface
 
 ## Description
-Auction House Interface is a simple web interface that allows users to register, log in, view, and create auctions, as well as participate in real-time bidding. It is the frontend part of the **Auction House** application. The backend repository, which provides the core auction functionality and API, is available [here](https://github.com/BartoszChmura/auction-house).
+**Auction House Interface** is a simple web interface that allows users to register, log in, view, and create auctions, as well as participate in real-time bidding. It is the frontend part of the **Auction House** application. The backend repository, which provides the core auction functionality and API, is available [here](https://github.com/BartoszChmura/auction-house).
 
 ## Features
 - User Registration and Login
